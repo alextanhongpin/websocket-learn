@@ -18,3 +18,46 @@ hash_map[user_id]: [session1_id: machine1_id, session2_id: machine2_id]
 To send to another user, we just need to know the user’s id. Then we can find the machine the user belongs to and publish the message to that machine.
 
 ## Consistent Hashing Application
+
+
+## PubSub
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	// conn is of type redis.Conn.
+	pubsubConn := &redis.PubSubConn{Conn: conn}
+	defer pubsubConn.Close()
+	
+	server := os.Hostname()
+	err := pubsubConn.Subscribe(server)
+	if err != nil {
+		log.Fatal(err)
+	}
+	go subscribe(pubsubConn)
+}
+
+func subscribe(conn *redis.PubSubConn) {
+	for {
+		switch v := conn.Receive().(type) {
+			case redis.Message:
+				// Do something with message.
+				fmt.Println(v.Channel, string(v.Data))
+				// Send to the broadcast channel.
+			case redis.Subscription:
+				fmt.Println(v.Channel, v.Kind, v.Count)
+			case error:
+				fmt.Println("error pub/sub, delivery has stopped")
+				return
+		}
+	}
+}
+
+// server:xyz:user:john: true
+// user:john -> server:xyz
+```
