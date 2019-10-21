@@ -17,6 +17,13 @@ hash_map[user_id]: [session1_id: machine1_id, session2_id: machine2_id]
 
 To send to another user, we just need to know the user’s id. Then we can find the machine the user belongs to and publish the message to that machine.
 
+## Websocket multiple instance
+
+For each user, store the web socket session id in a distributed cache for each session.
+When the user disconnects, clear the session.
+Clear sessions that are one month old.
+When publishing content to the user, find the user id and all the sessions. For each sessions, subscribe to the pub sub and trigger the session.
+
 ## Consistent Hashing Application
 
 
